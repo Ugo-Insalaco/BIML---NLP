@@ -1,0 +1,35 @@
+==== BIML TP 3 : NLP ====
+
+** Introduction **
+Dans ce TP on essaye de prédire à partir d'une phrase et d'un algorithme du type réseau de neuronnes récurents, quelle est l'émotion prédominante qui se dégage de la phrase.
+Par exemple dans la phrase 'im feeling rather rotten so im not very ambitious right now', le modèle devrait pouvoir nous répondre : 'sadness'.
+
+** Preprocessing ** 
+- Dans la partie traitement des données, on commence par charger les données sous forme d'une liste de phrase où chaque phrase est elle même une liste de mots.
+
+- Ensuite, à partir d'une base de données existante et modifiée de mots communs en anglais, on supprime les stop words de notre dataset. On se permet aussi de supprimer les mots n'apparaîssant que très rarement dans nos données car on suppose que l'on ne pourra pas apprendre énormément de ces mots non plus.
+
+- Dans une partie suivant, on calcul la valeur TF-IDF associée à chaque mot au sein d'une phrase. Par la suite on ajoutera cette valeur après l'encodage one-hot au moment de l'apprentissage.
+
+** Architecture du réseau ** 
+- Deux réseaux récurrents ont été testés : le premier est issus de https://pytorch.org/tutorials/intermediate/char_rnn_classification_tutorial et le second est construit autours d'une cellule GRU. 
+
+- Le premier réseau possède une première couche d'embedding de nos données, pour que les mots soient représentés dans un espace plus petit que celui d'origine (qui est de dimension le nombre total de mots distincts de notre dataset). Puis à la couche d'embedding on vient concaténer l'état interne de la cellule récurrente et ce nouveau vecteur passe une fonction d'activation et se divise ensuite en une sortie et un nouvel état interne grâce à des couches linéaires suivie d'une activation softmax pour la sortie (afin que la sortie puisse s'interpréter comme une probabilité d'être un certain type d'émotion)
+
+** Apprentissage **
+- Durant l'apprentissage, on effectue une permutation de nos données avant chaque epoch afin que les batchs soient différents d'époch en époch, puis on effectue l'encodage one-hot à la volée car mon PC ne possède pas assez de mémoire vive.
+
+- Une fois l'encodage one-hot effectué, on a le choix d'ajouter les valeurs de TF-IDF ou non
+
+- pendans l'apprentissage on pondère aussi les coefficients 1 du one-hot par la proportion d'élément de la classe à prédire
+- A chaque epoch est affiché la loss et l'accuracy du modèle
+
+** Résultats **
+- On observe durant l'apprentissage que l'accuracy reste relativement constante, ce qui traduit le fait que le modèle ne parvient pas à apprendre de nos données. Après plusieurs heures à tester différents paramètres, vérifier le code et rendre les données plus simples et interprétables pour l'algorithme, aucune tentative ne s'est révelée fructueuse et l'on parvient toujours au même modèle n'apprenant pas.
+
+- En observant les résultats de train et test, on observe une différence de 10% ce qui est cohérent et montre qu'il y a eu une part d'apprentissage. En regardant la table de confusion on voit que toutes les classes sont prédites par le modèle, et qu'il ne cherche donc pas à seulement prédire une seule ou les deux classes principales (comme ce fut souvent le cas au cours du développement de ce modèle)
+
+- L'amélioration principale qui a permis de rendre ce modèle performant fut celle de prendre en compte les disproportions entre les classes, en rapportant les target données au modèle par rapport au nombre d'instances ayant cette target dans notre base de données (par exemple l'emotion 'joy' est majoritaire et l'encoding one-hot de toutes les phrases dont l'émotion est 'joy' se trouvent réduites.
+
+** Test final ** 
+- La partie 6 du notebook permet de montrer l'utilisation du modèle dans son état final, en important un modèle ayant eu 70% de réussite à l'entrainement et en le testant sur notre base de données de bout en bout.
